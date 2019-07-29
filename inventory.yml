@@ -1,14 +1,14 @@
 all:
   vars:
-    username: admin
-    password: admin
+    username: cisco
+    password: Cisco1
   sites:
     - name: sjc
       hosts:
-        - hostname: SJ-R1
-          host: 192.168.122.11
+        - hostname: Cisco1
+          host: 10.10.1.1
           device_type_netmiko: cisco_ios
-          device_type: csr1000v
+          device_type: iosv-l3
           device_role: core
         - hostname: SJ-R2
           host: 192.168.122.12
