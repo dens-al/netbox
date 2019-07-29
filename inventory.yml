@@ -2,38 +2,27 @@ all:
   vars:
     username: cisco
     password: Cisco1
-  sites:
-    - name: sjc
-      hosts:
-        - hostname: Cisco1
-          host: 10.10.1.1
-          device_type_netmiko: cisco_ios
-          device_type: iosv-l3
-          device_role: core
-        - hostname: SJ-R2
-          host: 192.168.122.12
-          device_type_netmiko: cisco_ios
-          device_type: csr1000v
-          device_role: core
-        - hostname: SJ-SW1
-          host: 192.168.122.13
-          device_type_netmiko: cisco_ios
-          device_type: iosv-l2
-          device_role: access
-        - hostname: SJ-SW2
-          host: 192.168.122.14
-          device_type_netmiko: cisco_ios
-          device_type: iosv-l2
-          device_role: access
-        - hostname: SJ-HUB1
-          host: 192.168.122.15
-          device_type_netmiko: cisco_ios
-          device_type: csr1000v
-          device_role: edge
-    - name: bru
-      hosts:
-        - hostname: BRU-EDGE
-          host: 192.168.122.20
-          device_type_netmiko: cisco_ios
-          device_type: csr1000v
-          device_role: edge
+  hosts:
+    - ip: 10.10.1.1
+      device_type: cisco_ios
+      secret: ciscocisco
+    - ip: 10.10.1.2
+      device_type: cisco_ios
+      secret: ciscocisco
+#    - ip: 10.10.1.3
+#      device_type: cisco_ios
+#      secret: ciscocisco
+#    - ip: 10.10.1.4
+#      device_type: cisco_ios
+#      secret: ciscocisco
+#    - ip: 10.10.1.5
+#      device_type: cisco_ios
+#      secret: ciscocisco
+#    - ip: 10.10.1.6
+#      device_type: cisco_ios
+#      secret: ciscocisco
+#    - ip: 10.10.1.9
+#      device_type: cisco_nxos
+#    - ip: 10.10.1.7
+#      device_type: cisco_asa
+#      secret: ciscocisco
