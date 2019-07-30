@@ -10,8 +10,8 @@ COMMANDS_LIST = [
 ]
 COMMANDS_CISCO_IOS_DIC = {
    'show version' : 'out_templates/cisco_ios_show_version.template',
-   'show inventory' : 'out_templates/cisco_ios_show_inventory.template',
-   'show ip route' : 'out_templates/cisco_ios_show_ip_route.template'
+   'show inventory' : 'out_templates/cisco_ios_show_inventory.template'
+#   'show ip route' : 'out_templates/cisco_ios_show_ip_route.template'
 }
 COMMANDS_CISCO_NXOS_DIC = {
    'show version' : 'out_templates/cisco_nxos_show_version.template',
