@@ -18,9 +18,15 @@ all:
 #    - ip: 10.10.1.5
 #      device_type: cisco_ios
 #      secret: ciscocisco
-#    - ip: 10.10.1.6
-#      device_type: cisco_ios
-#      secret: ciscocisco
+    - ip: 10.10.1.6
+      device_type: cisco_ios
+      secret: ciscocisco
+    - ip: 10.10.1.16
+      device_type: cisco_ios
+      secret: ciscocisco
+    - ip: 10.10.1.26
+      device_type: cisco_ios
+      secret: ciscocisco
 #    - ip: 10.10.1.9
 #      device_type: cisco_nxos
 #    - ip: 10.10.1.7

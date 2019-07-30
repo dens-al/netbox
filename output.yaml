@@ -1,0 +1,54 @@
+- - Distance: '1'
+    Mask: /0
+    Metric: '0'
+    Network: 0.0.0.0
+    NexthopIP: 10.10.1.254
+    NexthopIf: ''
+    Protocol: S
+    Type: ''
+    Uptime: ''
+  - Distance: ''
+    Mask: /24
+    Metric: ''
+    Network: 10.10.1.0
+    NexthopIP: ''
+    NexthopIf: GigabitEthernet0/0
+    Protocol: C
+    Type: ''
+    Uptime: ''
+  - Distance: ''
+    Mask: /32
+    Metric: ''
+    Network: 10.10.1.1
+    NexthopIP: ''
+    NexthopIf: GigabitEthernet0/0
+    Protocol: L
+    Type: ''
+    Uptime: ''
+- - Distance: '1'
+    Mask: /0
+    Metric: '0'
+    Network: 0.0.0.0
+    NexthopIP: 10.10.1.254
+    NexthopIf: ''
+    Protocol: S
+    Type: ''
+    Uptime: ''
+  - Distance: ''
+    Mask: /24
+    Metric: ''
+    Network: 10.10.1.0
+    NexthopIP: ''
+    NexthopIf: GigabitEthernet0/0
+    Protocol: C
+    Type: ''
+    Uptime: ''
+  - Distance: ''
+    Mask: /32
+    Metric: ''
+    Network: 10.10.1.2
+    NexthopIP: ''
+    NexthopIf: GigabitEthernet0/0
+    Protocol: L
+    Type: ''
+    Uptime: ''
