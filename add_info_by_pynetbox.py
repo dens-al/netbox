@@ -18,15 +18,28 @@ nb = pynetbox.api(url=NETBOX_URL, token=NETBOX_API_TOKEN)
 
 
 def create_site(name):
-    "Check if site doesn't exist add new site with same slug"
+    """
+    Check if site doesn't exist add new site with same slug
+    """
     sites = [str(site) for site in nb.dcim.sites.all()]
     if name not in sites:
         print('site {site} not exists. Creating site'.format(site=name))
-        nb.dcim.sites.create(name=name, slug=name)
+        nb.dcim.sites.create(name=name, slug=name.lower())
         print('...done')
     else:
-        print('site {site} has found'.format(site=name))
+        print('site {site} is already exists'.format(site=name))
 
+def create_device_type(name):
+    """
+    Check if device-type doesn't exist add new model with same slug
+    """
+    models = [str(model) for model in nb.dcim.device_types.all()]
+    if name not in models:
+        print('model {model} not exists. Creating new model'.format(model=name))
+        nb.dcim.device_types.create(name=name, slug=name.lower())
+        print('...done')
+    else:
+        print('site {site} is already exists'.format(site=name))
 
 def main():
     """
@@ -41,3 +54,7 @@ def main():
     device_role = match.group('role')
 
     create_site(device_site)
+
+if __name__ == "__main__":
+    main()
+
