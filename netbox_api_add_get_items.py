@@ -29,8 +29,7 @@ def get_sites():
         NETBOX_API_ROOT + NETBOX_SITES_ENDPOINT, headers=headers
     )
     sites = r.json()  # full dictionary from json response
-    list_of_sites = [name['name'] for name in sites['results']]
-    return list_of_sites
+    return sites
 
 
 def get_device_types():
@@ -42,8 +41,7 @@ def get_device_types():
         NETBOX_API_ROOT + NETBOX_DEVICE_TYPES, headers=headers
     )
     models = r.json()  # full dictionary from json response
-    list_of_models = [model['model'] for model in models['results']]
-    return list_of_models
+    return models
 
 
 def get_devices():
@@ -94,37 +92,44 @@ def add_model(name):
         r.raise_for_status()
 
 
-def add_sites():
-    """Add sites from SITES dictionary"""
-    for site in SITES:
-        add_site(**site)
-    print("All sites have been added")
+# def add_sites():
+#    """Add sites from SITES dictionary"""
+#    for site in SITES:
+#        add_site(**site)
+#    print("All sites have been added")
 
 
-def add_device(name, device_type_id, site_id, device_role_id):
-
-    if 'access-switch' in devices['results'][1]['device_role'].values():
-        ...: print(devices['results'][1]['device_role']['id'])
-
+def add_device(name, model_id, manufacture_id, role_id, site_id, serial=None):
+    """
+    Add device using income parameters
+    :param serial: Serial Number, not nessesusary
+    :param name: hostname
+    :param model_id: id of model (existing list, require to use from list)
+    :param manufacture_id: id of manufacturer (e2ixisting list, require to use from list)
+    :param site_id: id of site (existing list, require to use from list)
+    :param role_id: id of role (existing list, (router,switch etc.), require to use from list)
+    :return: nothing. Make POST url to netbox API
+    """
     headers = form_headers()
     data = {
         "name": name,
         "display_name": name,
-        "device_type": device_type_id,  # 2,
-        "site": site_id,  # 1,
-        "status": 1,
+        "device_type": [model_id],  # 2,
+        "manufacturer": manufacture_id,  # 3
+        "device_role": [role_id],
+        "site": [site_id],  # 1,
+        "serial": serial,
+        "status": 1
     }
-    if device_role_id is not None:
-        data["device_role"] = device_role_id
+    pprint(data)
+    #r = requests.post(
+    #   NETBOX_API_ROOT + NETBOX_DEVICES_ENDPOINT, headers=headers, json=data
+    #)
 
-    r = requests.post(
-        NETBOX_API_ROOT + NETBOX_DEVICES_ENDPOINT, headers=headers, json=data
-    )
-
-    if r.status_code == 201:
-        print(f"Device {name} was added successfully")
-    else:
-        r.raise_for_status()
+    #if r.status_code == 201:
+    #   print("Device {name} was added successfully")
+    #else:
+    #   r.raise_for_status()
 
 
 def add_devices():
@@ -139,14 +144,28 @@ def main():
     # headers = form_headers()
     # add_sites()
     # add_devices()
-    get_sites()
-    pprint(get_sites())
 
-    parsed_yaml = read_yaml()
-    for devices in parsed_yaml['all']['hosts']:
-        if 'cisco' in devices['device_type']:
-            pprint('ok')
-            ## Add device with manufacture Cisco
+    sites = get_sites()
+    list_of_sites = [name['name'] for name in sites['results']]
+    pprint(list_of_sites)
+
+    models = get_device_types()
+    list_of_models = [model['model'] for model in models['results']]
+    pprint(list_of_models)
+
+    devices = get_devices()
+    list_of_devices = [device['name'] for device in devices['results']]
+    pprint(list_of_devices)
+
+    # if 'access-switch' in devices['results'][1]['device_role'].values():
+    #   ...: print(devices['results'][1]['device_role']['id'])
+
+    # parsed_yaml = read_yaml()
+    # for devices in parsed_yaml['all']['hosts']:
+    #    if 'cisco' in devices['device_type']:
+    #        pprint('ok')
+    ## Add device with manufacture Cisco
+    add_device('ufa01-csw01', 3, 2, 1, 4)
 
 
 if __name__ == "__main__":
