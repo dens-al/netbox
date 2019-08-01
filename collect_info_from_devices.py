@@ -12,7 +12,7 @@ COMMANDS_CISCO_IOS_DIC = {
     'show version': 'out_templates/cisco_ios_show_version.template',
     'show inventory': 'out_templates/cisco_ios_show_inventory.template',
     'show ip interface brief': 'out_templates/cisco_ios_show_ip_int_brief.template',
-    'show ip route' : 'out_templates/cisco_ios_show_ip_route.template'
+    'show ip route': 'out_templates/cisco_ios_show_ip_route.template'
 }
 COMMANDS_CISCO_NXOS_DIC = {
     'show version': 'out_templates/cisco_nxos_show_version.template',
@@ -51,25 +51,25 @@ def collect_outputs(device, commands, param_names):
             fsm = textfsm.TextFSM(template)
             headers_out = fsm.header
             values_out = fsm.ParseText(command_result)
-        # result = values_out
-
         result_for_print = [dict(zip(headers_out, results)) for results in values_out]
-        print(tabulate(result_for_print, headers='keys')+"\n")
+        print(tabulate(result_for_print, headers='keys') + "\n")
         output_results.append(result_for_print)
+    output_dic = dict(zip(param_names, output_results))
     connection.disconnect()
-    return output_results
+    return output_dic
 
 
-def main():
+def collect_info():
     parsed_yaml = read_yaml()
     print("Inventory file read successfully")
     connection_params = form_connection_params_from_yaml(parsed_yaml)
     all_devices = []
     for device in connection_params:
         out = collect_outputs(device, COMMANDS_CISCO_IOS_DIC, COMMANDS_LIST)
-        pprint(out)
+        # pprint(out)
         all_devices.append(out)
+    return all_devices
 
 
 if __name__ == "__main__":
-    main()
+    collect_info()
