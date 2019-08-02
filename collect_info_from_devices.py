@@ -6,13 +6,12 @@ from tabulate import tabulate
 from helper import read_yaml, form_connection_params_from_yaml
 
 COMMANDS_LIST = [
-    "version", "inventory", "interfaces", "routes"
+    "version", "inventory", "interfaces"
 ]
 COMMANDS_CISCO_IOS_DIC = {
     'show version': 'out_templates/cisco_ios_show_version.template',
     'show inventory': 'out_templates/cisco_ios_show_inventory.template',
-    'show ip interface brief': 'out_templates/cisco_ios_show_ip_int_brief.template',
-    'show ip route': 'out_templates/cisco_ios_show_ip_route.template'
+    'show ip interface': 'out_templates/cisco_ios_show_ip_interface.template'
 }
 COMMANDS_CISCO_NXOS_DIC = {
     'show version': 'out_templates/cisco_nxos_show_version.template',

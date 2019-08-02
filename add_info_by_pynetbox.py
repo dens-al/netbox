@@ -33,6 +33,7 @@ def create_site(name):
         site = nb.dcim.sites.get(name=name)
     return site
 
+
 def create_device_type(model, manufacturer_id):
     """
     Create new device type (model). Manufacture ID must be known
@@ -47,6 +48,18 @@ def create_device_type(model, manufacturer_id):
     except pynetbox.RequestError as e:
         print(e.error)
 
+def create_interface(device_id, name):
+    """
+    Create new interface of known device
+    """
+    try:
+        result = nb.dcim.interfaces.create(
+            device=device_id,
+            name=name
+        )
+        print('device type {model} is added'.format(model=result))
+    except pynetbox.RequestError as e:
+        print(e.error)
 
 def create_device(name, device_type_id, device_role_id, site_id, serial=None):
     """
@@ -86,6 +99,10 @@ def main():
         device_site = match.group('site')
         device_role = match.group('role')
         device_type = device_params['version'][0]['HARDWARE']
+
+        # because of I use eve-ng Cisco images, Hardware is empty. So I made device_type = uknown
+        if device_type == '':
+            device_type = 'IOS-L3v'
         device_serial = device_params['version'][0]['SERIAL']
 
         # check if site is in base and create nb_site object
@@ -100,21 +117,33 @@ def main():
             if key in device_role:
                 nb_device_role = nb.dcim.device_roles.get(name=NETBOX_ROLES[key])
 
-        nb_manufacturer = nb.dcim.manufacturers.get(name=vendor) ## don't know how make Cisco
+        nb_manufacturer = nb.dcim.manufacturers.get(name=vendor)  ## don't know how make Cisco
 
         # check if model is in base and create nb_model object
         if nb.dcim.device_types.get(model=device_type) is None:
             print('model {model} not exists. Creating model'.format(model=device_type))
-            create_device_type(device_type,nb_manufacturer)
+            create_device_type(device_type, nb_manufacturer.id)
             print('...done')
-        nb_device_type = nb.dcim.device_type.get(name=device_site)
+        nb_device_type = nb.dcim.device_types.get(model=device_type)
 
         # check if device is in base and create nb_device object
         if nb.dcim.devices.get(name=hostname) is None:
-            create_device(hostname,nb_device_type.id,nb_device_role.id,nb_site.id,serial=device_serial)
+            create_device(hostname, nb_device_type.id, nb_device_role.id, nb_site.id, serial=device_serial)
         nb_device = nb.dcim.devices.get(name=hostname)
 
-    # create_site(device_site)
+        ## add interfaces from device
+        device_interfaces = device_params['interfaces'] # list of dictionaries
+        for interface in device_interfaces:
+            if nb.dcim.interfaces.get(device=nb_device.id, name=interface['INTF']) is None:
+                print('interface {intf} not exists. Creating interface'.format(intf=interface['INTF']))
+                create_interface(nb_device.id, interface['INTF'])
+                print('...done')
+            nb_interface = nb.dcim.interfaces.get(device=nb_device.id, name=interface['INTF'])
+
+            ## create IP address from interface
+
+            nb.ipam.ip_addresses.create(address='192.168.88.101/24', device=nb_device.id, interface=nb_interface.id)
+
 
 
 if __name__ == "__main__":
