@@ -2,7 +2,6 @@ Value Required INTF (\S+)
 Value LINK_STATUS (.+?)
 Value PROTOCOL_STATUS (.+?)
 Value List IPADDR (\S+?)
-Value List MASK (\d*)
 Value VRF (\S+)
 Value MTU (\d+)
 Value List IP_HELPER (\d+\.\d+\.\d+\.\d+)
@@ -13,9 +12,9 @@ Value INBOUND_ACL (.*?)
 Start
   ^\S -> Continue.Record
   ^${INTF}\s+is\s+${LINK_STATUS},\s+line\s+protocol\s+is\s+${PROTOCOL_STATUS}\s*$$
-  ^\s+Internet\s+address\s+is\s+${IPADDR}/?${MASK}\s*$$
-  ^\s+Secondary\s+address\s+${IPADDR}/?${MASK}\s*$$
-  ^.+VPN\s+Routing/Forwarding\s+"${VRF}"
+  ^\s+Internet\s+address\s+is\s+${IPADDR}\s*$$
+  ^\s+Secondary\s+address\s+${IPADDR}\s*$$
+  ^\s+VPN\s+Routing/Forwarding\s+"${VRF}"
   ^\s+MTU\s+is\s+${MTU}\s+bytes
   ^\s+Helper\s+address(es|)\s(is|are)\s+${IP_HELPER}\s*$$ -> HELPERS
   ^\s+Outgoing\s+(?:Common\s+)?access\s+list\s+is\s+not\s+set
@@ -32,6 +31,7 @@ Start
   ^\s+MTU
   ^\s+Helper
   ^\s+Directed
+  ^\s+Downstream
   ^\s+Outgoing
   ^\s+Inbound
   ^\s+.*Proxy

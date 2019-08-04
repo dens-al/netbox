@@ -48,6 +48,7 @@ def create_device_type(model, manufacturer_id):
     except pynetbox.RequestError as e:
         print(e.error)
 
+
 def create_interface(device_id, name):
     """
     Create new interface of known device
@@ -60,6 +61,7 @@ def create_interface(device_id, name):
         print('device type {model} is added'.format(model=result))
     except pynetbox.RequestError as e:
         print(e.error)
+
 
 def create_device(name, device_type_id, device_role_id, site_id, serial=None):
     """
@@ -75,6 +77,22 @@ def create_device(name, device_type_id, device_role_id, site_id, serial=None):
             serial=serial
         )
         print('device {device} is added'.format(device=result))
+    except pynetbox.RequestError as e:
+        print(e.error)
+
+
+def create_ip_address(address, device_id, interface_id, vrf_id=None):
+    """
+    creating IP address for interface, VRF is optional
+    """
+    try:
+        result = nb.ipam.ip_addresses.create(
+            address=address,
+            device=device_id,
+            interface=interface_id,
+            vrfs=vrf_id
+        )
+        print('IP address {ipaddr} is added'.format(ipaddr=result))
     except pynetbox.RequestError as e:
         print(e.error)
 
@@ -132,7 +150,7 @@ def main():
         nb_device = nb.dcim.devices.get(name=hostname)
 
         ## add interfaces from device
-        device_interfaces = device_params['interfaces'] # list of dictionaries
+        device_interfaces = device_params['interfaces']  # list of dictionaries
         for interface in device_interfaces:
             if nb.dcim.interfaces.get(device=nb_device.id, name=interface['INTF']) is None:
                 print('interface {intf} not exists. Creating interface'.format(intf=interface['INTF']))
@@ -141,9 +159,14 @@ def main():
             nb_interface = nb.dcim.interfaces.get(device=nb_device.id, name=interface['INTF'])
 
             ## create IP address from interface
-
-            nb.ipam.ip_addresses.create(address='192.168.88.101/24', device=nb_device.id, interface=nb_interface.id)
-
+            if interface['VRF'] is '':
+                for ip_prefix in interface['IPADDR']:
+                    if nb.ipam.ip_addresses.get(addess=ip_prefix) is None:
+                        print('ip address {ipaddr} not exists. Creating ip address on interface {intf}'.format(
+                            ipaddr=ip_prefix, intf=nb_interface))
+                        create_ip_address(ip_prefix, nb_device.id, nb_interface.id)
+            # if nb.ipam.ip_addresses.get():
+            # nb.ipam.ip_addresses.create(address='192.168.88.101/24', device=nb_device.id, interface=nb_interface.id)
 
 
 if __name__ == "__main__":

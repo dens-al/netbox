@@ -67,6 +67,7 @@ def collect_info():
         out = collect_outputs(device, COMMANDS_CISCO_IOS_DIC, COMMANDS_LIST)
         # pprint(out)
         all_devices.append(out)
+    pprint(all_devices)
     return all_devices
 
 
