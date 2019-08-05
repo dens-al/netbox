@@ -51,7 +51,7 @@ def collect_outputs(device, commands, param_names):
             headers_out = fsm.header
             values_out = fsm.ParseText(command_result)
         result_for_print = [dict(zip(headers_out, results)) for results in values_out]
-        print(tabulate(result_for_print, headers='keys') + "\n")
+        # print(tabulate(result_for_print, headers='keys') + "\n")
         output_results.append(result_for_print)
     output_dic = dict(zip(param_names, output_results))
     connection.disconnect()
@@ -67,7 +67,7 @@ def collect_info():
         out = collect_outputs(device, COMMANDS_CISCO_IOS_DIC, COMMANDS_LIST)
         # pprint(out)
         all_devices.append(out)
-    pprint(all_devices)
+    # pprint(all_devices)
     return all_devices
 
 
