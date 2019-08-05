@@ -184,12 +184,12 @@ def main():
                 nb_ip_list = nb.ipam.ip_addresses.filter(device=nb_device, interface=nb_interface)
                 nb_ip_list = [str(ip) for ip in nb_ip_list]
 
-                # create IP address in ipam if doesn't exist
+                # create IP address from device if in ipam it doesn't exist
                 for ip_addr in set(ip_list).difference(nb_ip_list):
                     print('creating IP address {ipaddr} on {intf} of {dev}'.format(ipaddr=ip_addr, intf=nb_interface,
                                                                                    dev=nb_device))
                     create_ip_address(ip_addr, nb_device.id, nb_interface.id)
-                # delete IP address in ipam if it doesn't exist in device
+                # delete IP address in ipam if it doesn't exist on device
                 for ip_addr in set(nb_ip_list).difference(ip_list):
                     print('found non actual IP address {ipaddr} on {intf} of {dev}.\nDeleting it'.format(ipaddr=ip_addr,
                                                                                                          intf=nb_interface,
