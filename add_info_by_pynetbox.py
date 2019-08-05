@@ -98,18 +98,18 @@ def create_ip_address(address, device_id, interface_id, vrf_id=None):
         print(e.error)
 
 
-def delete_ip_address(address, device_id, interface_id, vrf_id=None):
+def delete_ip_address(address, device, interface, vrf_id=None):
     """
     deleting IP address for interface, VRF is optional
     """
     try:
         result = nb.ipam.ip_addresses.get(
             address=address,
-            device=device_id,
-            interface=interface_id,
+            device=device,
+            interface=interface,
             vrfs=vrf_id
         ).delete()
-        print('IP address {ipaddr} is deleted'.format(ipaddr=result))
+        print('IP address {ipaddr} is deleted'.format(ipaddr=address))
     except pynetbox.RequestError as e:
         print(e.error)
 
@@ -194,7 +194,7 @@ def main():
                     print('found non actual IP address {ipaddr} on {intf} of {dev}.\nDeleting it'.format(ipaddr=ip_addr,
                                                                                                          intf=nb_interface,
                                                                                                          dev=nb_device))
-                    delete_ip_address(ip_addr, nb_device.id, nb_interface.id)
+                    delete_ip_address(ip_addr, nb_device, nb_interface)
 
                 for ip_addr in ip_list:
                     # create IP prefixes using "ipaddress" module
