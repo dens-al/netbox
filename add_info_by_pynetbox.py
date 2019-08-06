@@ -170,8 +170,9 @@ def main():
         for interface in device_interfaces:
             if nb.dcim.interfaces.get(device=nb_device, name=interface['INTF']) is None:
                 print(
-                    'interface {intf} on device {dev} does not exist. \nCreating interface'.format(intf=interface['INTF'],
-                                                                                                 dev=nb_device))
+                    'interface {intf} on device {dev} does not exist. \nCreating interface'.format(
+                        intf=interface['INTF'],
+                        dev=nb_device))
                 create_interface(nb_device.id, interface['INTF'])
                 print('...done')
             nb_interface = nb.dcim.interfaces.get(device=nb_device, name=interface['INTF'])
@@ -202,20 +203,6 @@ def main():
                     if nb.ipam.prefixes.get(prefix=str(ip_intf.network)) is None and not str(
                             ip_intf.netmask) == '255.255.255.255':
                         nb.ipam.prefixes.create(prefix=str(ip_intf.network))
-
-
-#                    # check if IP-address doesn't exist create it
-#                    if ip_prefix in [str(ip) for ip in ip_list]:
-#
-#                    if nb.ipam.ip_addresses.get(address=ip_prefix) is None:
-#                        print('ip address {ipaddr} not exists. Creating ip address on interface {intf}'.format(
-#                            ipaddr=ip_prefix, intf=nb_interface))
-#                        create_ip_address(ip_prefix, nb_device.id, nb_interface.id)
-#                    else:
-#                        # if IP-address changed, update it
-#                        update_ip = nb.ipam.ip_addresses.get(address=ip_prefix).update({"address": ip_prefix})
-#                        if update_ip:
-#                            print('ip address {ipaddr} updated'.format(ipaddr=ip_prefix))
 
 
 if __name__ == "__main__":
