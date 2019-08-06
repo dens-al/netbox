@@ -21,8 +21,8 @@ hosts:
   cisco_asa:
   - ip: 10.10.1.7
     device_type: cisco_asa
-  huawei:
-  sterra:
+    #  huawei:
+    #  sterra:
     #      secret: ciscocisco
 #    - ip: 10.10.1.16
 #      device_type: cisco_ios

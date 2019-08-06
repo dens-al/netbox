@@ -18,7 +18,7 @@ COMMANDS_CISCO_IOS_DIC = {
 COMMANDS_CISCO_NXOS_DIC = {
     'show version': 'out_templates/cisco_nxos_show_version.template',
     'show inventory': 'out_templates/cisco_nxos_show_inventory.template',
-    'show ip route': 'out_templates/cisco_nxos_show_ip_route.template'
+    'show ip interface': 'out_templates/cisco_nxos_show_ip_route.template'
 }
 COMMANDS_CISCO_ASA_DIC = {
     'show version': 'out_templates/cisco_asa_show_version.template',
@@ -105,14 +105,39 @@ def collect_info2():
     parsed_yaml = read_yaml()
     pprint(parsed_yaml)
     connection_params = form_connection_params_from_yaml(parsed_yaml)
-    device_count = len(connection_params)
-    output_list = []
-    result = send_commands_to_devices(connection_params, COMMANDS_CISCO_ASA_DIC, workers=device_count)
-    for device in result:
-        output_dic = dict(zip(COMMANDS_LIST, device))
-        output_list.append(output_dic)
+    for device_type in connection_params.keys():
+        if device_type == 'cisco_ios':
+            device_count = len(connection_params[device_type])
+            cisco_ios_list = []
+            result = send_commands_to_devices(connection_params[device_type], COMMANDS_CISCO_IOS_DIC,
+                                              workers=device_count)
+            for device in result:
+                output_dic = dict(zip(COMMANDS_LIST, device))
+                cisco_ios_list.append(output_dic)
+
+        if device_type == 'cisco_asa':
+            device_count = len(connection_params[device_type])
+            cisco_asa_list = []
+            result = send_commands_to_devices(connection_params[device_type], COMMANDS_CISCO_ASA_DIC,
+                                              workers=device_count)
+            for device in result:
+                output_dic = dict(zip(COMMANDS_LIST, device))
+                cisco_asa_list.append(output_dic)
+
+        if device_type == 'cisco_nxos':
+            device_count = len(connection_params[device_type])
+            cisco_nxos_list = []
+            result = send_commands_to_devices(connection_params[device_type], COMMANDS_CISCO_NXOS_DIC,
+                                              workers=device_count)
+            for device in result:
+                output_dic = dict(zip(COMMANDS_LIST, device))
+                cisco_nxos_list.append(output_dic)
+
     print('Collecting information completed')
-    pprint(output_list)
+    # pprint(cisco_ios_list)
+    # pprint(cisco_asa_list)
+    pprint(cisco_nxos_list)
+    output_list = cisco_ios_list + cisco_nxos_list + cisco_asa_list
     return output_list
 
 
