@@ -45,31 +45,35 @@ start_msg = '===> {} Connection: {}'
 received_msg = '<=== {} Received: {}'
 
 
-def send_command(device, command, template):
+def send_commands(device, commands):
     """
+    :param template: textfsm template
     :param device: netmiko device dictionary
-    :param command: some command
+    :param commands: dictionary {command : textfsm template}
     :return: list of dictionaries {textfsm headers: out values}
     """
     ip = device['ip']
+    total_result = []
     logging.info(start_msg.format(datetime.now().time(), ip))
-    with netmiko.ConnectHandler(**device) as ssh:
-        command_result = ssh.send_command(command)
-        logging.info(received_msg.format(datetime.now().time(), ip))
-    with open(template) as temp:
-        fsm = textfsm.TextFSM(temp)
-        headers_out = fsm.header
-        values_out = fsm.ParseText(command_result)
-    result_for_print = [dict(zip(headers_out, results)) for results in values_out]
+    for command, template in commands.items():
+        with netmiko.ConnectHandler(**device) as ssh:
+            command_result = ssh.send_command(command)
+            logging.info(received_msg.format(datetime.now().time(), ip))
+        with open(template) as temp:
+            fsm = textfsm.TextFSM(temp)
+            headers_out = fsm.header
+            values_out = fsm.ParseText(command_result)
+        result_for_print = [dict(zip(headers_out, results)) for results in values_out]
+        total_result.append(result_for_print)
     # print(tabulate(result_for_print, headers='keys') + "\n") # For OUT print
-    return result_for_print
+    return total_result
 
 
-def send_command_to_devices(devices, command, template):
+def send_commands_to_devices(devices, commands, template):
     data = []
     with ProcessPoolExecutor(max_workers=6) as executor:
         future_ssh = [
-            executor.submit(send_command, device, command, template) for device in devices
+            executor.submit(send_commands, device, commands, template) for device in devices
         ]
         for f in as_completed(future_ssh):
             try:
