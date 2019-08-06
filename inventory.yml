@@ -1,34 +1,36 @@
-all:
-  vars:
-    username: cisco
-    password: Cisco1
-  hosts:
-    - ip: 10.10.1.1
-      device_type: cisco_ios
+vars:
+  username: cisco
+  password: Cisco1
+hosts:
+  cisco_ios:
+  - ip: 10.10.1.1
+    device_type: cisco_ios
+  - ip: 10.10.1.2
+    device_type: cisco_ios
+  - ip: 10.10.1.3
+    device_type: cisco_ios
+  - ip: 10.10.1.6
+    device_type: cisco_ios
+  - ip: 10.10.1.16
+    device_type: cisco_ios
+  - ip: 10.10.1.26
+    device_type: cisco_ios
+  cisco_nxos:
+  - ip: 10.10.1.9
+    device_type: cisco_nxos
+  cisco_asa:
+  - ip: 10.10.1.7
+    device_type: cisco_asa
+  huawei:
+  sterra:
     #      secret: ciscocisco
-    - ip: 10.10.1.2
-      device_type: cisco_ios
-    #      secret: ciscocisco
-#    - ip: 10.10.1.3
+#    - ip: 10.10.1.16
 #      device_type: cisco_ios
-#      secret: ciscocisco
-#    - ip: 10.10.1.4
-#      device_type: cisco_ios
-#      secret: ciscocisco
-#    - ip: 10.10.1.5
-#      device_type: cisco_ios
-#      secret: ciscocisco
-    - ip: 10.10.1.6
-      device_type: cisco_ios
     #      secret: ciscocisco
-    - ip: 10.10.1.16
-      device_type: cisco_ios
-    #      secret: ciscocisco
-    - ip: 10.10.1.26
-      device_type: cisco_ios
+#    - ip: 10.10.1.26
+#      device_type: cisco_ios
 #      secret: ciscocisco
 #    - ip: 10.10.1.9
 #      device_type: cisco_nxos
-#    - ip: 10.10.1.7
-#      device_type: cisco_asa
-#      secret: ciscocisco
+
+ #     secret: ciscocisco

@@ -125,7 +125,7 @@ def main():
     Read info from inventory.yml
     """
     list_params = collect_info()
-    # pprint(list_params)
+    print('Begin to parsinng information for Netbox')
     vendor = 'Cisco'
     regex = '(?P<site>\S+?)-(?P<role>\S+$)'
     for device_params in list_params:
@@ -181,6 +181,7 @@ def main():
             if interface['VRF'] is '':
 
                 # Compare list of IP from device with list of IP from ipam
+
                 ip_list = interface['IPADDR']
                 nb_ip_list = nb.ipam.ip_addresses.filter(device=nb_device, interface=nb_interface)
                 nb_ip_list = [str(ip) for ip in nb_ip_list]

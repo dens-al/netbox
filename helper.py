@@ -1,6 +1,7 @@
 from copy import deepcopy
 import yaml
 
+
 def read_yaml(path="inventory.yml"):
     """
     Reads inventory yaml file and return dictionary with parsed values
@@ -23,8 +24,11 @@ def form_connection_params_from_yaml(parsed_yaml):
         list of dics containing netmiko connection parameters for the host
     """
     parsed_yaml = deepcopy(parsed_yaml)
-    list_params = parsed_yaml["all"]["hosts"]
+    list_params = parsed_yaml["hosts"]
     for site_dict in list_params:
-        site_dict.update(parsed_yaml['all']['vars'])
+        site_dict.update(parsed_yaml['vars'])
     return list_params
 
+
+if __name__ == '__main__':
+    print(form_connection_params_from_yaml("inventory.yml"))
