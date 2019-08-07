@@ -26,12 +26,13 @@ def form_connection_params_from_yaml(parsed_yaml):
     """
     parsed_yaml = deepcopy(parsed_yaml)
     dic_types = parsed_yaml["hosts"]
-    for list_params in dic_types.values():
+    for key, list_params in dic_types.items():
         for site_dict in list_params:
             site_dict.update(parsed_yaml['vars'])
+            site_dict.update({'device_type': key})
     return dic_types
 
 
 if __name__ == '__main__':
-    # print(read_yaml())
-    pprint(form_connection_params_from_yaml(read_yaml()))
+    pprint(read_yaml(path="out_templates.yml"))
+    #pprint(form_connection_params_from_yaml(read_yaml()))

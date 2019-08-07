@@ -13,12 +13,12 @@ COMMANDS_LIST = [
 COMMANDS_CISCO_IOS_DIC = {
     'show version': 'out_templates/cisco_ios_show_version.template',
     'show inventory': 'out_templates/cisco_ios_show_inventory.template',
-    'show ip interface': 'out_templates/cisco_ios_show_ip_interface.template'
+    'show interfaces': 'out_templates/cisco_ios_show_interfaces.template'
 }
 COMMANDS_CISCO_NXOS_DIC = {
     'show version': 'out_templates/cisco_nxos_show_version.template',
     'show inventory': 'out_templates/cisco_nxos_show_inventory.template',
-    'show ip interface': 'out_templates/cisco_nxos_show_ip_route.template'
+    'show interface': 'out_templates/cisco_nxos_show_interface.template'
 }
 COMMANDS_CISCO_ASA_DIC = {
     'show version': 'out_templates/cisco_asa_show_version.template',
@@ -44,11 +44,11 @@ send_command_msg = '==> Send command: {}'
 def send_commands(device, commands):
     """
     :param device: netmiko device dictionary
-    :param commands: dictionary {command : textfsm template}
+    :param commands: dictionary {command : textfsm template}. Defined in top
     :return: list of dictionaries {textfsm headers: out values}
     """
     ip = device['ip']
-    total_result = []
+    results = []
     logging.info(start_msg.format(ip))
     for command, template in commands.items():
         with netmiko.ConnectHandler(**device) as ssh:
@@ -59,13 +59,21 @@ def send_commands(device, commands):
             fsm = textfsm.TextFSM(temp)
             headers_out = fsm.header
             values_out = fsm.ParseText(command_result)
-        result = [dict(zip(headers_out, results)) for results in values_out]
-        total_result.append(result)
-        print(tabulate(result, headers='keys') + "\n") # For OUT print
-    return total_result
+        command_result = [dict(zip(headers_out, outs)) for outs in values_out]
+        results.append(command_result)
+        print(tabulate(command_result, headers='keys') + "\n")  # For OUT print
+    return results
 
 
 def send_commands_to_devices(devices, commands, workers=6):
+    """
+    send list of commands for several devices in parallel.
+    generate error if exception of connections
+    :param devices: list of netmiko device dictionaries
+    :param commands: dictionary {command : textfsm template}. Defined in top
+    :param workers: number of parallel workers. Default = 6
+    :return: list of dictionaries made in send_commands
+    """
     list_of_results = []
     with ProcessPoolExecutor(max_workers=workers) as executor:
         future_ssh = [
@@ -87,24 +95,28 @@ def send_commands_to_devices(devices, commands, workers=6):
     return list_of_results
 
 
-def collect_info():
-    parsed_yaml = read_yaml()
-    device_count = len(parsed_yaml['all']['hosts'])
-    connection_params = form_connection_params_from_yaml(parsed_yaml)
-    output_list = []
-    result = send_commands_to_devices(connection_params, COMMANDS_CISCO_IOS_DIC, workers=device_count)
+def collect_info_device_type(devices, commands_dic, workers, commands_type_list):
+    """
+    Make total dictionary of results of one device type (example: all info about all cisco_ios devices)
+    :param devices: list of netmiko device dictionaries
+    :param workers: number of parallel workers.
+    :param commands_type_list: list of commands type. Defined in top.
+    :param commands_dic:  dictionary {command : textfsm template}. Defined in top
+    :return:
+    """
+    list_of_device_type_results = []
+    result = send_commands_to_devices(devices, commands_dic, workers)
     for device in result:
-        output_dic = dict(zip(COMMANDS_LIST, device))
-        output_list.append(output_dic)
-    print('Collecting information completed')
-    pprint(output_list)
-    return output_list
+        output_dic = dict(zip(commands_type_list, device))
+        list_of_device_type_results.append(output_dic)
+    return list_of_device_type_results
 
 
 def collect_info2():
     parsed_yaml = read_yaml()
     pprint(parsed_yaml)
     connection_params = form_connection_params_from_yaml(parsed_yaml)
+
     for device_type in connection_params.keys():
         if device_type == 'cisco_ios':
             device_count = len(connection_params[device_type])
@@ -134,12 +146,28 @@ def collect_info2():
                 cisco_nxos_list.append(output_dic)
 
     print('Collecting information completed')
-    # pprint(cisco_ios_list)
-    # pprint(cisco_asa_list)
-    pprint(cisco_nxos_list)
+    pprint(cisco_ios_list)
+    pprint(cisco_asa_list)
+    # pprint(cisco_nxos_list)
     output_list = cisco_ios_list + cisco_nxos_list + cisco_asa_list
     return output_list
 
 
 if __name__ == "__main__":
-    collect_info2()
+    parsed_yaml = read_yaml()
+    connection_params = form_connection_params_from_yaml(parsed_yaml)
+    pprint(connection_params)
+    for device_type, device_list in connection_params.items():
+        if device_type == 'cisco_ios':
+            device_count = len(device_list)
+            cisco_ios_list = collect_info_device_type(device_list, COMMANDS_CISCO_IOS_DIC, device_count, COMMANDS_LIST)
+        if device_type == 'cisco_asa':
+            device_count = len(device_list)
+            cisco_asa_list = collect_info_device_type(device_list, COMMANDS_CISCO_ASA_DIC, device_count, COMMANDS_LIST)
+        if device_type == 'cisco_nxos':
+            device_count = len(device_list)
+            cisco_nxos_list = collect_info_device_type(device_list, COMMANDS_CISCO_NXOS_DIC, device_count, COMMANDS_LIST)
+    pprint(cisco_ios_list)
+
+    #collect_info2()
+    #collect_info_device_type()

@@ -50,20 +50,6 @@ def create_device_type(model, manufacturer_id):
         print(e.error)
 
 
-def create_interface(device_id, name):
-    """
-    Create new interface of known device
-    """
-    try:
-        result = nb.dcim.interfaces.create(
-            device=device_id,
-            name=name
-        )
-        print('interface {intf} is added'.format(intf=result))
-    except pynetbox.RequestError as e:
-        print(e.error)
-
-
 def create_device(name, device_type_id, device_role_id, site_id, serial=None):
     """
     creating device with type, role, site IDs
@@ -78,6 +64,25 @@ def create_device(name, device_type_id, device_role_id, site_id, serial=None):
             serial=serial
         )
         print('device {device} is added'.format(device=result))
+    except pynetbox.RequestError as e:
+        print(e.error)
+
+
+def create_interface(device_id, name, type_id=1000, status=True, mtu=None, mac_address=None, description=None):
+    """
+    Create new interface of known device
+    """
+    try:
+        result = nb.dcim.interfaces.create(
+            device=device_id,
+            name=name,
+            form_factor=type_id,
+            enabled=status,
+            mtu=mtu,
+            mac_address=mac_address,
+            description=description
+        )
+        print('interface {intf} is added'.format(intf=result))
     except pynetbox.RequestError as e:
         print(e.error)
 
@@ -168,20 +173,29 @@ def main():
         # add interfaces from device
         device_interfaces = device_params['interfaces']  # list of dictionaries
         for interface in device_interfaces:
-            if nb.dcim.interfaces.get(device=nb_device, name=interface['INTF']) is None:
+            # define values
+            interface_name = interface['INTF']
+            interface_mtu = interface['MTU']
+            interface_desc = interface['DESCRIPTION']
+            interface_mac = interface['ADDRESS']
+            interface_status = True
+            if 'down' in interface['LINK_STATUS']:
+                interface_status = False
+
+            # create interface on device
+            if nb.dcim.interfaces.get(device=nb_device, name=interface_name) is None:
                 print(
                     'interface {intf} on device {dev} does not exist. \nCreating interface'.format(
-                        intf=interface['INTF'],
+                        intf=interface_name,
                         dev=nb_device))
-                create_interface(nb_device.id, interface['INTF'])
+                create_interface(nb_device.id, interface_name, status=interface_status, mtu=interface_mtu, mac_address=interface_mac, description=interface_desc)
                 print('...done')
-            nb_interface = nb.dcim.interfaces.get(device=nb_device, name=interface['INTF'])
+            nb_interface = nb.dcim.interfaces.get(device=nb_device, name=interface_name)
 
             # create IP address and prefixes from interface
             if interface['VRF'] is '':
 
                 # Compare list of IP from device with list of IP from ipam
-
                 ip_list = interface['IPADDR']
                 nb_ip_list = nb.ipam.ip_addresses.filter(device=nb_device, interface=nb_interface)
                 nb_ip_list = [str(ip) for ip in nb_ip_list]

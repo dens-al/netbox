@@ -1,6 +1,6 @@
 Value Required INTF (\S+)
 Value INTERFACE_ZONE (.+?)
-Value LINK_STATUS (\w+)
+Value LINK_STATUS (up|down|administratively down)
 Value PROTOCOL_STATUS (.*)
 Value HARDWARE_TYPE ([\w ]+)
 Value BANDWIDTH (\d+\s+\w+)
@@ -12,16 +12,17 @@ Value ADDRESS ([a-zA-Z0-9]+.[a-zA-Z0-9]+.[a-zA-Z0-9]+)
 Value MTU (\d+)
 Value IPADDR (\d+\.\d+\.\d+\.\d+)
 Value MASK (\d+\.\d+\.\d+\.\d+)
-Value ONEMIN_IN_PPS (\d+)
-Value ONEMIN_IN_RATE (\d+)
-Value ONEMIN_OUT_PPS (\d+)
-Value ONEMIN_OUT_RATE (\d+)
-Value ONEMIN_DROP_RATE (\d+)
-Value FIVEMIN_IN_PPS (\d+)
-Value FIVEMIN_IN_RATE (\d+)
-Value FIVEMIN_OUT_PPS (\d+)
-Value FIVEMIN_OUT_RATE (\d+)
-Value FIVEMIN_DROP_RATE (\d+)
+
+#Value ONEMIN_IN_PPS (\d+)
+#Value ONEMIN_IN_RATE (\d+)
+#Value ONEMIN_OUT_PPS (\d+)
+#Value ONEMIN_OUT_RATE (\d+)
+#Value ONEMIN_DROP_RATE (\d+)
+#Value FIVEMIN_IN_PPS (\d+)
+#Value FIVEMIN_IN_RATE (\d+)
+#Value FIVEMIN_OUT_PPS (\d+)
+#Value FIVEMIN_OUT_RATE (\d+)
+#Value FIVEMIN_DROP_RATE (\d+)
 
 Start
   ^Interface.* -> Continue.Record
@@ -32,9 +33,9 @@ Start
   ^.*Description: ${DESCRIPTION}
   ^.*MAC address ${ADDRESS}.*MTU ${MTU}
   ^.*IP address ${IPADDR}, .*subnet mask ${MASK}
-  ^.*1 minute input rate ${ONEMIN_IN_PPS} pkts/sec,\s+${ONEMIN_IN_RATE} bytes/sec
-  ^.*1 minute output rate ${ONEMIN_OUT_PPS} pkts/sec,\s+${ONEMIN_OUT_RATE} bytes/sec
-  ^.*1 minute drop rate, ${ONEMIN_DROP_RATE}
-  ^.*5 minute input rate ${FIVEMIN_IN_PPS} pkts/sec,\s+${FIVEMIN_IN_RATE} bytes/sec
-  ^.*5 minute output rate ${FIVEMIN_OUT_PPS} pkts/sec,\s+${FIVEMIN_OUT_RATE} bytes/sec
-  ^.*5 minute drop rate, ${FIVEMIN_DROP_RATE}
+#  ^.*1 minute input rate ${ONEMIN_IN_PPS} pkts/sec,\s+${ONEMIN_IN_RATE} bytes/sec
+#  ^.*1 minute output rate ${ONEMIN_OUT_PPS} pkts/sec,\s+${ONEMIN_OUT_RATE} bytes/sec
+#  ^.*1 minute drop rate, ${ONEMIN_DROP_RATE}
+#  ^.*5 minute input rate ${FIVEMIN_IN_PPS} pkts/sec,\s+${FIVEMIN_IN_RATE} bytes/sec
+#  ^.*5 minute output rate ${FIVEMIN_OUT_PPS} pkts/sec,\s+${FIVEMIN_OUT_RATE} bytes/sec
+#  ^.*5 minute drop rate, ${FIVEMIN_DROP_RATE}
