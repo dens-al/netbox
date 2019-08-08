@@ -9,7 +9,7 @@ Value IPADDR (\d+\.\d+\.\d+\.\d+\/\d+)
 Value MTU (\d+)
 Value BANDWIDTH (\d+\s+\w+)
 Value DELAY (\d+\s+\w+)
-Value ENCAPSULATION (\w+)
+Value VLAN (\w+)
 Value QUEUE_STRATEGY (.*)
 
 Start
@@ -19,5 +19,5 @@ Start
   ^\s+Description: ${DESCRIPTION}
   ^\s+Internet address is ${IPADDR}
   ^\s+MTU ${MTU}.*BW ${BANDWIDTH}.*DLY ${DELAY}
-  ^\s+Encapsulation ${ENCAPSULATION}
+  ^\s+Encapsulation ${VLAN}
   ^\s+Queueing strategy: ${QUEUE_STRATEGY} -> Record

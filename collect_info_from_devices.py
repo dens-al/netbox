@@ -7,31 +7,6 @@ from helper import read_yaml, form_connection_params_from_yaml
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import logging
 
-COMMANDS_LIST = [
-    "version", "inventory", "interfaces"
-]
-COMMANDS_CISCO_IOS_DIC = {
-    'show version': 'out_templates/cisco_ios_show_version.template',
-    'show inventory': 'out_templates/cisco_ios_show_inventory.template',
-    'show interfaces': 'out_templates/cisco_ios_show_interfaces.template'
-}
-COMMANDS_CISCO_NXOS_DIC = {
-    'show version': 'out_templates/cisco_nxos_show_version.template',
-    'show inventory': 'out_templates/cisco_nxos_show_inventory.template',
-    'show interface': 'out_templates/cisco_nxos_show_interface.template'
-}
-COMMANDS_CISCO_ASA_DIC = {
-    'show version': 'out_templates/cisco_asa_show_version.template',
-    'show inventory': 'out_templates/cisco_asa_show_inventory.template',
-    'show interface': 'out_templates/cisco_asa_show_interface.template'
-}
-
-# COMMANDS_LIST = {
-#    'cisco_ios': COMMANDS_LIST_CISCO_IOS,
-#    'cisco_nxos' : COMMANDS_LIST_CISCO_NXOS
-#    'cisco_asa': COMMANDS_LIST_CISCO_ASA
-# }
-
 logging.getLogger("paramiko").setLevel(logging.WARNING)
 logging.basicConfig(
     format='%(message)s',
@@ -112,62 +87,37 @@ def collect_info_device_type(devices, commands_dic, workers, commands_type_list)
     return list_of_device_type_results
 
 
-def collect_info2():
-    parsed_yaml = read_yaml()
-    pprint(parsed_yaml)
-    connection_params = form_connection_params_from_yaml(parsed_yaml)
+def collect_info():
+    """
+    read inventory.yml as input information, out_templates.yml as information about textfsm templates and return dic of
+    collected info
+    :return:
+    """
+    parsed_yaml_inventory = read_yaml(path="inventory.yml")
+    parsed_yaml_template = read_yaml(path="out_templates.yml")
+    # pprint(parsed_yaml_template)
+    connection_params = form_connection_params_from_yaml(parsed_yaml_inventory)
+    # pprint(connection_params)
 
+    # check wrong names in inventory file
+    wrong_names = []
     for device_type in connection_params.keys():
-        if device_type == 'cisco_ios':
-            device_count = len(connection_params[device_type])
-            cisco_ios_list = []
-            result = send_commands_to_devices(connection_params[device_type], COMMANDS_CISCO_IOS_DIC,
-                                              workers=device_count)
-            for device in result:
-                output_dic = dict(zip(COMMANDS_LIST, device))
-                cisco_ios_list.append(output_dic)
+        if device_type not in parsed_yaml_template.keys():
+            print(
+                'device type {type} does not have OUT template in out_templates.yml\nDelete it'.format(
+                    type=device_type))
+            wrong_names.append(device_type)
+    for name in wrong_names:
+        del (connection_params[name])
 
-        if device_type == 'cisco_asa':
-            device_count = len(connection_params[device_type])
-            cisco_asa_list = []
-            result = send_commands_to_devices(connection_params[device_type], COMMANDS_CISCO_ASA_DIC,
-                                              workers=device_count)
-            for device in result:
-                output_dic = dict(zip(COMMANDS_LIST, device))
-                cisco_asa_list.append(output_dic)
-
-        if device_type == 'cisco_nxos':
-            device_count = len(connection_params[device_type])
-            cisco_nxos_list = []
-            result = send_commands_to_devices(connection_params[device_type], COMMANDS_CISCO_NXOS_DIC,
-                                              workers=device_count)
-            for device in result:
-                output_dic = dict(zip(COMMANDS_LIST, device))
-                cisco_nxos_list.append(output_dic)
-
-    print('Collecting information completed')
-    pprint(cisco_ios_list)
-    pprint(cisco_asa_list)
-    # pprint(cisco_nxos_list)
-    output_list = cisco_ios_list + cisco_nxos_list + cisco_asa_list
-    return output_list
+    total_result = {}
+    for device_type, device_list in connection_params.items():
+        device_count = len(device_list)
+        type_result_list = collect_info_device_type(
+            device_list, parsed_yaml_template[device_type], device_count, parsed_yaml_template['command_list'])
+        total_result.update({device_type: type_result_list})
+    return total_result
 
 
 if __name__ == "__main__":
-    parsed_yaml = read_yaml()
-    connection_params = form_connection_params_from_yaml(parsed_yaml)
-    pprint(connection_params)
-    for device_type, device_list in connection_params.items():
-        if device_type == 'cisco_ios':
-            device_count = len(device_list)
-            cisco_ios_list = collect_info_device_type(device_list, COMMANDS_CISCO_IOS_DIC, device_count, COMMANDS_LIST)
-        if device_type == 'cisco_asa':
-            device_count = len(device_list)
-            cisco_asa_list = collect_info_device_type(device_list, COMMANDS_CISCO_ASA_DIC, device_count, COMMANDS_LIST)
-        if device_type == 'cisco_nxos':
-            device_count = len(device_list)
-            cisco_nxos_list = collect_info_device_type(device_list, COMMANDS_CISCO_NXOS_DIC, device_count, COMMANDS_LIST)
-    pprint(cisco_ios_list)
-
-    #collect_info2()
-    #collect_info_device_type()
+    collect_info()

@@ -1,6 +1,16 @@
 from copy import deepcopy
 import yaml
 from pprint import pprint
+import re
+
+
+def make_slug(s):
+    # Remove all non-word characters (everything except numbers and letters)
+    s = re.sub(r"[^\w\s]", '', s)
+    # Replace all runs of whitespace with a single dash
+    s = re.sub(r"\s+", '-', s)
+
+    return s.lower()
 
 
 def read_yaml(path="inventory.yml"):
@@ -35,4 +45,4 @@ def form_connection_params_from_yaml(parsed_yaml):
 
 if __name__ == '__main__':
     pprint(read_yaml(path="out_templates.yml"))
-    #pprint(form_connection_params_from_yaml(read_yaml()))
+    # pprint(form_connection_params_from_yaml(read_yaml()))

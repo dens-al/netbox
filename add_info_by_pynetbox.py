@@ -3,6 +3,7 @@ import re
 import ipaddress
 from collect_info_from_devices import collect_info
 from pprint import pprint
+from helper import make_slug
 
 NETBOX_URL = "http://10.10.1.100:8085"
 NETBOX_API_TOKEN = '454a75712e782741166ed11fe711e3d5f9476e05'
@@ -27,7 +28,7 @@ def create_site(name):
     sites = [str(site) for site in nb.dcim.sites.all()]
     if name not in sites:
         print('site {site} not exists. Creating site'.format(site=name))
-        site = nb.dcim.sites.create(name=name, slug=name.lower())
+        site = nb.dcim.sites.create(name=name, slug=make_slug(name))
         print('...done')
     else:
         print('site {site} is already exists'.format(site=name))
@@ -42,7 +43,7 @@ def create_device_type(model, manufacturer_id):
     try:
         result = nb.dcim.device_types.create(
             model=model,
-            slug=model.lower(),
+            slug=make_slug(model),
             manufacturer=manufacturer_id
         )
         print('device type {model} is added'.format(model=result))
@@ -129,74 +130,84 @@ def main():
     """
     Read info from inventory.yml
     """
-    list_params = collect_info()
+    dic_params = collect_info()
+    pprint(dic_params)
     print('Begin to parsinng information for Netbox')
-    vendor = 'Cisco'
     regex = '(?P<site>\S+?)-(?P<role>\S+$)'
-    for device_params in list_params:
-        hostname = device_params['version'][0]['HOSTNAME']
-        match = re.search(regex, hostname)
-        device_site = match.group('site')
-        device_role = match.group('role')
-        device_type = device_params['version'][0]['HARDWARE']
-        device_serial = device_params['version'][0]['SERIAL']
+    vendors = [str(vendor).lower() for vendor in nb.dcim.manufacturers.all()]
 
-        # because of I use eve-ng Cisco images, Hardware is empty. So I made device_type = unknown
-        if device_type == '':
-            device_type = 'unknown'
+    # Define vendor of device using device_type (must consider vendor name in Netbox)
+    for device_type, list_params in dic_params.items():
+        for vendor in vendors:
+            if vendor in device_type:
+                nb_manufacturer = nb.dcim.manufacturers.get(slug=vendor)
+        # Parse devices from same vendor
+        for device_params in list_params:
+            hostname = device_params['version'][0]['HOSTNAME']
+            match = re.search(regex, hostname)
+            device_site = match.group('site')
+            device_role = match.group('role')
+            device_model = device_params['version'][0]['HARDWARE']
+            device_serial = device_params['version'][0]['SERIAL']
 
-        # check if site is in base and create nb_site object
-        if nb.dcim.sites.get(name=device_site) is None:
-            print('site {site} does not exist. Creating site'.format(site=device_site))
-            nb.dcim.sites.create(name=device_site, slug=device_site.lower())
-            print('...done')
-        nb_site = nb.dcim.sites.get(name=device_site)
+            # because of I use eve-ng Cisco images, Hardware is empty. So I made device_model = unknown
+            if device_model == '':
+                device_model = 'unknown'
 
-        # find role from hostname and create nb_device_role object
-        for key in NETBOX_ROLES.keys():
-            if key in device_role:
-                nb_device_role = nb.dcim.device_roles.get(name=NETBOX_ROLES[key])
-        nb_manufacturer = nb.dcim.manufacturers.get(name=vendor)  # don't know how to make Cisco
-
-        # check if model is in base and create nb_model object
-        if nb.dcim.device_types.get(model=device_type) is None:
-            print('model {model} does not exist. Creating model'.format(model=device_type))
-            create_device_type(device_type, nb_manufacturer.id)
-            print('...done')
-        nb_device_type = nb.dcim.device_types.get(model=device_type)
-
-        # check if device is in base and create nb_device object
-        if nb.dcim.devices.get(name=hostname) is None:
-            create_device(hostname, nb_device_type.id, nb_device_role.id, nb_site.id, serial=device_serial)
-        nb_device = nb.dcim.devices.get(name=hostname)
-
-        # add interfaces from device
-        device_interfaces = device_params['interfaces']  # list of dictionaries
-        for interface in device_interfaces:
-            # define values
-            interface_name = interface['INTF']
-            interface_mtu = interface['MTU']
-            interface_desc = interface['DESCRIPTION']
-            interface_mac = interface['ADDRESS']
-            interface_status = True
-            if 'down' in interface['LINK_STATUS']:
-                interface_status = False
-
-            # create interface on device
-            if nb.dcim.interfaces.get(device=nb_device, name=interface_name) is None:
-                print(
-                    'interface {intf} on device {dev} does not exist. \nCreating interface'.format(
-                        intf=interface_name,
-                        dev=nb_device))
-                create_interface(nb_device.id, interface_name, status=interface_status, mtu=interface_mtu, mac_address=interface_mac, description=interface_desc)
+            # check if site is in base and create nb_site object
+            if nb.dcim.sites.get(name=device_site) is None:
+                print('site {site} does not exist. Creating site'.format(site=device_site))
+                nb.dcim.sites.create(name=device_site, slug=make_slug(device_site))
                 print('...done')
-            nb_interface = nb.dcim.interfaces.get(device=nb_device, name=interface_name)
+            nb_site = nb.dcim.sites.get(name=device_site)
 
-            # create IP address and prefixes from interface
-            if interface['VRF'] is '':
+            # find role from hostname and create nb_device_role object
+            for key in NETBOX_ROLES.keys():
+                if key in device_role:
+                    nb_device_role = nb.dcim.device_roles.get(name=NETBOX_ROLES[key])
 
+            # check if model is in base and create nb_model object
+            if nb.dcim.device_types.get(model=device_model) is None:
+                print('model {model} does not exist. Creating model'.format(model=device_model))
+                create_device_type(device_model, nb_manufacturer.id)
+                print('...done')
+            nb_device_type = nb.dcim.device_types.get(model=device_model)
+
+            # check if device is in base and create nb_device object
+            if nb.dcim.devices.get(name=hostname) is None:
+                create_device(hostname, nb_device_type.id, nb_device_role.id, nb_site.id, serial=device_serial)
+            nb_device = nb.dcim.devices.get(name=hostname)
+
+            # add interfaces from device
+            device_interfaces = device_params['interfaces']  # list of dictionaries
+            for interface in device_interfaces:
+                # define values
+                interface_name = interface['INTF']
+                IPADDR = interface['IPADDR']
+                MASK = interface['MASK']
+                ip_list = [ip + '/' + mask for ip, mask in list(zip(IPADDR, MASK))]
+                if 'MTU' in interface.keys():
+                    interface_mtu = interface['MTU']
+                if 'DESCRIPTION' in interface.keys():
+                    interface_desc = interface['DESCRIPTION']
+                if 'ADDRESS' in interface.keys():
+                    interface_mac = interface['ADDRESS']
+                interface_status = True
+                if 'down' in interface['LINK_STATUS']:
+                    interface_status = False
+
+                # create interface on device
+                if nb.dcim.interfaces.get(device=nb_device, name=interface_name) is None:
+                    print(
+                        'interface {intf} on device {dev} does not exist. \nCreating interface'.format(
+                            intf=interface_name, dev=nb_device))
+                    create_interface(nb_device.id, interface_name, status=interface_status, mtu=interface_mtu,
+                                     mac_address=interface_mac, description=interface_desc)
+                    print('...done')
+                nb_interface = nb.dcim.interfaces.get(device=nb_device, name=interface_name)
+
+                # create IP address and prefixes from interface
                 # Compare list of IP from device with list of IP from ipam
-                ip_list = interface['IPADDR']
                 nb_ip_list = nb.ipam.ip_addresses.filter(device=nb_device, interface=nb_interface)
                 nb_ip_list = [str(ip) for ip in nb_ip_list]
 
@@ -207,9 +218,8 @@ def main():
                     create_ip_address(ip_addr, nb_device.id, nb_interface.id)
                 # delete IP address in ipam if it doesn't exist on device
                 for ip_addr in set(nb_ip_list).difference(ip_list):
-                    print('found non actual IP address {ipaddr} on {intf} of {dev}.\nDeleting it'.format(ipaddr=ip_addr,
-                                                                                                         intf=nb_interface,
-                                                                                                         dev=nb_device))
+                    print('found non actual IP address {ipaddr} on {intf} of {dev}.'
+                          '\nDeleting it'.format(ipaddr=ip_addr, intf=nb_interface, dev=nb_device))
                     delete_ip_address(ip_addr, nb_device, nb_interface)
 
                 for ip_addr in ip_list:
