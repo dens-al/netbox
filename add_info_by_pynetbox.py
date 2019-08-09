@@ -111,8 +111,8 @@ def delete_ip_address(address, device, interface):
     try:
         result = nb.ipam.ip_addresses.get(
             address=address,
-            # device=device,
-            # interface=interface
+            device=device,
+            interface=interface
         ).delete()
         print('IP address {ipaddr} is deleted'.format(ipaddr=address))
     except pynetbox.RequestError as e:
