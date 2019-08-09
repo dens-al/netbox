@@ -2,7 +2,7 @@ Value Required INTF (\S+)
 Value LINK_STATUS (up|down|administratively down)
 Value PROTOCOL_STATUS (.*)
 Value HARDWARE_TYPE ([\w ]+)
-Value ADDRESS ([a-zA-Z0-9]+.[a-zA-Z0-9]+.[a-zA-Z0-9]+)
+Value MAC ([a-zA-Z0-9]+.[a-zA-Z0-9]+.[a-zA-Z0-9]+)
 Value BIA ([a-zA-Z0-9]+.[a-zA-Z0-9]+.[a-zA-Z0-9]+)
 Value DESCRIPTION (.*)
 Value IPADDR (\d+\.\d+\.\d+\.\d+\/\d+)
@@ -15,7 +15,7 @@ Value QUEUE_STRATEGY (.*)
 Start
   ^${INTF} is ${LINK_STATUS}.*protocol is ${PROTOCOL_STATUS}
   ^\s+Hardware is ${HARDWARE_TYPE} -> Continue
-  ^.*address is ${ADDRESS}.*bia ${BIA}
+  ^.*address is ${MAC}.*bia ${BIA}
   ^\s+Description: ${DESCRIPTION}
   ^\s+Internet address is ${IPADDR}
   ^\s+MTU ${MTU}.*BW ${BANDWIDTH}.*DLY ${DELAY}

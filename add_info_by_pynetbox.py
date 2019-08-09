@@ -104,16 +104,15 @@ def create_ip_address(address, device_id, interface_id, vrf_id=None):
         print(e.error)
 
 
-def delete_ip_address(address, device, interface, vrf_id=None):
+def delete_ip_address(address, device, interface):
     """
     deleting IP address for interface, VRF is optional
     """
     try:
         result = nb.ipam.ip_addresses.get(
             address=address,
-            device=device,
-            interface=interface,
-            vrfs=vrf_id
+            # device=device,
+            # interface=interface
         ).delete()
         print('IP address {ipaddr} is deleted'.format(ipaddr=address))
     except pynetbox.RequestError as e:
@@ -186,15 +185,21 @@ def main():
                 IPADDR = interface['IPADDR']
                 MASK = interface['MASK']
                 ip_list = [ip + '/' + mask for ip, mask in list(zip(IPADDR, MASK))]
-                if 'MTU' in interface.keys():
-                    interface_mtu = interface['MTU']
-                if 'DESCRIPTION' in interface.keys():
-                    interface_desc = interface['DESCRIPTION']
-                if 'ADDRESS' in interface.keys():
-                    interface_mac = interface['ADDRESS']
                 interface_status = True
                 if 'down' in interface['LINK_STATUS']:
                     interface_status = False
+                interface_mtu = None
+                if 'MTU' in interface.keys():
+                    if interface['MTU'] is '':
+                        interface_mtu = None
+                    else:
+                        interface_mtu = interface['MTU']
+                interface_desc = ""
+                if 'DESCRIPTION' in interface.keys():
+                    interface_desc = interface['DESCRIPTION']
+                interface_mac = None
+                if 'MAC' in interface.keys():
+                    interface_mac = interface['MAC']
 
                 # create interface on device
                 if nb.dcim.interfaces.get(device=nb_device, name=interface_name) is None:
@@ -203,24 +208,27 @@ def main():
                             intf=interface_name, dev=nb_device))
                     create_interface(nb_device.id, interface_name, status=interface_status, mtu=interface_mtu,
                                      mac_address=interface_mac, description=interface_desc)
-                    print('...done')
                 nb_interface = nb.dcim.interfaces.get(device=nb_device, name=interface_name)
 
                 # create IP address and prefixes from interface
                 # Compare list of IP from device with list of IP from ipam
-                nb_ip_list = nb.ipam.ip_addresses.filter(device=nb_device, interface=nb_interface)
+                try:
+                    nb_ip_list = nb.ipam.ip_addresses.filter(device=nb_device, interface=nb_interface)
+                except pynetbox.RequestError as e:
+                    print(e.error)
                 nb_ip_list = [str(ip) for ip in nb_ip_list]
+
+                # delete IP address in ipam if it doesn't exist on device
+                for ip_addr in set(nb_ip_list).difference(ip_list):
+                    print('found non actual IP address {ipaddr} on {intf} of {dev}.'
+                          '\nDeleting it'.format(ipaddr=ip_addr, intf=nb_interface, dev=nb_device))
+                    delete_ip_address(ip_addr, nb_device, nb_interface)
 
                 # create IP address from device if in ipam it doesn't exist
                 for ip_addr in set(ip_list).difference(nb_ip_list):
                     print('creating IP address {ipaddr} on {intf} of {dev}'.format(ipaddr=ip_addr, intf=nb_interface,
                                                                                    dev=nb_device))
                     create_ip_address(ip_addr, nb_device.id, nb_interface.id)
-                # delete IP address in ipam if it doesn't exist on device
-                for ip_addr in set(nb_ip_list).difference(ip_list):
-                    print('found non actual IP address {ipaddr} on {intf} of {dev}.'
-                          '\nDeleting it'.format(ipaddr=ip_addr, intf=nb_interface, dev=nb_device))
-                    delete_ip_address(ip_addr, nb_device, nb_interface)
 
                 for ip_addr in ip_list:
                     # create IP prefixes using "ipaddress" module
