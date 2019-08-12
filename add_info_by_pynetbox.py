@@ -88,6 +88,44 @@ def create_interface(device_id, name, type_id=1000, status=True, mtu=None, mac_a
         print(e.error)
 
 
+def update_interface(device, name, status=True, description=None):
+    """
+    Update description and status interface of known device
+    """
+    device_params = {
+        'enabled': status,
+        'description': description
+    }
+    try:
+        result = nb.dcim.interfaces.get(
+            device=device,
+            name=name
+        )
+        for key, value in device_params.items():
+            if dict(result)[key] is not value:
+                result.update({key: value})
+                print('{param} on interface {intf} is updated'.format(param=key, intf=result))
+
+    except pynetbox.RequestError as e:
+        print(e.error)
+
+
+def create_vrf(name, description='', rd=None):
+    """
+    creating device with type, role, site IDs
+    or print error if device is already added or IDs are wrong
+    """
+    try:
+        result = nb.ipam.vrfs.create(
+            name=name,
+            description=description,
+            rd=rd
+        )
+        print('VRF {vrf} is added'.format(vrf=result))
+    except pynetbox.RequestError as e:
+        print(e.error)
+
+
 def create_ip_address(address, device_id, interface_id, vrf_id=None):
     """
     creating IP address for interface, VRF is optional
@@ -104,7 +142,7 @@ def create_ip_address(address, device_id, interface_id, vrf_id=None):
         print(e.error)
 
 
-def delete_ip_address(address, device, interface):
+def delete_ip_address(address, device, interface, vrf_id=None):
     """
     deleting IP address for interface, VRF is optional
     """
@@ -112,7 +150,8 @@ def delete_ip_address(address, device, interface):
         result = nb.ipam.ip_addresses.get(
             address=address,
             device=device,
-            interface=interface
+            interface=interface,
+            vrfs=vrf_id
         ).delete()
         print('IP address {ipaddr} is deleted'.format(ipaddr=address))
     except pynetbox.RequestError as e:
@@ -185,21 +224,34 @@ def main():
                 IPADDR = interface['IPADDR']
                 MASK = interface['MASK']
                 ip_list = [ip + '/' + mask for ip, mask in list(zip(IPADDR, MASK))]
+                # transform netmask to bitmask (255.255.255.0 => 24)
+                ip_list = [ipaddress.ip_interface(ip_address).with_prefixlen for ip_address in ip_list]
+
                 interface_status = True
                 if 'down' in interface['LINK_STATUS']:
                     interface_status = False
+
                 interface_mtu = None
                 if 'MTU' in interface.keys():
                     if interface['MTU'] is '':
                         interface_mtu = None
                     else:
                         interface_mtu = interface['MTU']
+
                 interface_desc = ""
                 if 'DESCRIPTION' in interface.keys():
                     interface_desc = interface['DESCRIPTION']
                 interface_mac = None
+
                 if 'MAC' in interface.keys():
                     interface_mac = interface['MAC']
+
+                interface_vrf = None
+                if 'VRF' in interface.kes():
+                    if interface['VRF'] is '':
+                        interface_vrf = None
+                    else:
+                        interface_vrf = interface['VRF']
 
                 # create interface on device
                 if nb.dcim.interfaces.get(device=nb_device, name=interface_name) is None:
@@ -208,7 +260,12 @@ def main():
                             intf=interface_name, dev=nb_device))
                     create_interface(nb_device.id, interface_name, status=interface_status, mtu=interface_mtu,
                                      mac_address=interface_mac, description=interface_desc)
+                else:
+                    update_interface(nb_device, interface_name, status=interface_status, description=interface_desc)
                 nb_interface = nb.dcim.interfaces.get(device=nb_device, name=interface_name)
+
+                # create VRF from interface
+
 
                 # create IP address and prefixes from interface
                 # Compare list of IP from device with list of IP from ipam

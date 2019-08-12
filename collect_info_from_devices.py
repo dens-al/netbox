@@ -120,4 +120,4 @@ def collect_info():
 
 
 if __name__ == "__main__":
-    collect_info()
+    pprint(collect_info())

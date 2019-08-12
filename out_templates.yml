@@ -1,21 +1,21 @@
 command_list:
   - version
-  - inventory
+# - inventory
   - interfaces
 
 cisco_ios:
   show version: out_templates/cisco_ios_show_version.template
-  show inventory: out_templates/cisco_ios_show_inventory.template
+#  show inventory: out_templates/cisco_ios_show_inventory.template
   show ip interface: out_templates/cisco_ios_show_ip_interface.template
 
 cisco_nxos:
   show version: out_templates/cisco_nxos_show_version.template
-  show inventory: out_templates/cisco_nxos_show_inventory.template
+#  show inventory: out_templates/cisco_nxos_show_inventory.template
   show interfaces: out_templates/cisco_nxos_show_interface.template
 
 cisco_asa:
   show version: out_templates/cisco_asa_show_version.template
-  show inventory: out_templates/cisco_asa_show_inventory.template
+#  show inventory: out_templates/cisco_asa_show_inventory.template
   show interface: out_templates/cisco_asa_show_interface.template
 
 
