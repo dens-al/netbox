@@ -135,7 +135,7 @@ def create_ip_address(address, device_id, interface_id, vrf_id=None):
             address=address,
             device=device_id,
             interface=interface_id,
-            vrfs=vrf_id
+            vrf=vrf_id
         )
         print('IP address {ipaddr} is added'.format(ipaddr=result))
     except pynetbox.RequestError as e:
@@ -151,7 +151,7 @@ def delete_ip_address(address, device, interface, vrf_id=None):
             address=address,
             device=device,
             interface=interface,
-            vrfs=vrf_id
+            vrf=vrf_id
         ).delete()
         print('IP address {ipaddr} is deleted'.format(ipaddr=address))
     except pynetbox.RequestError as e:
@@ -247,7 +247,7 @@ def main():
                     interface_mac = interface['MAC']
 
                 interface_vrf = None
-                if 'VRF' in interface.kes():
+                if 'VRF' in interface.keys():
                     if interface['VRF'] is '':
                         interface_vrf = None
                     else:
@@ -265,7 +265,10 @@ def main():
                 nb_interface = nb.dcim.interfaces.get(device=nb_device, name=interface_name)
 
                 # create VRF from interface
-
+                if interface_vrf is not None and nb.ipam.vrfs.get(name=interface_vrf) is None:
+                    print('vrf {vrf} does not exist. \nCreating vrf'.format(vrf=interface_vrf))
+                    create_vrf(interface_vrf)
+                nb_vrf = nb.ipam.vrfs.get(name=interface_vrf)
 
                 # create IP address and prefixes from interface
                 # Compare list of IP from device with list of IP from ipam
@@ -279,13 +282,13 @@ def main():
                 for ip_addr in set(nb_ip_list).difference(ip_list):
                     print('found non actual IP address {ipaddr} on {intf} of {dev}.'
                           '\nDeleting it'.format(ipaddr=ip_addr, intf=nb_interface, dev=nb_device))
-                    delete_ip_address(ip_addr, nb_device, nb_interface)
+                    delete_ip_address(ip_addr, nb_device, nb_interface, vrf_id=nb_vrf)
 
                 # create IP address from device if in ipam it doesn't exist
                 for ip_addr in set(ip_list).difference(nb_ip_list):
                     print('creating IP address {ipaddr} on {intf} of {dev}'.format(ipaddr=ip_addr, intf=nb_interface,
                                                                                    dev=nb_device))
-                    create_ip_address(ip_addr, nb_device.id, nb_interface.id)
+                    create_ip_address(ip_addr, nb_device.id, nb_interface.id, vrf_id=nb_vrf.id)
 
                 for ip_addr in ip_list:
                     # create IP prefixes using "ipaddress" module
