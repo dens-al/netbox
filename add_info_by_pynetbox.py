@@ -286,6 +286,7 @@ def main():
                     delete_ip_address(ip_addr, nb_device.id, nb_interface.id)
 
                 # create IP address from device if in ipam it doesn't exist
+
                 for ip_addr in set(ip_list).difference(nb_ip_list):
                     print('creating IP address {ipaddr} on {intf} of {dev}'.format(ipaddr=ip_addr, intf=nb_interface,
                                                                                    dev=nb_device))
@@ -297,9 +298,30 @@ def main():
                 for ip_addr in ip_list:
                     # create IP prefixes using "ipaddress" module
                     ip_intf = ipaddress.ip_interface(ip_addr)
-                    if nb.ipam.prefixes.get(prefix=str(ip_intf.network)) is None and not str(
-                            ip_intf.netmask) == '255.255.255.255':
-                        nb.ipam.prefixes.create(prefix=str(ip_intf.network))
+                    loopback = False
+                    if str(ip_intf.netmask) == '255.255.255.255':
+                        loopback = True
+
+                    if not loopback:
+                        if len(nb.ipam.prefixes.filter(q=ip_addr)) == 0:
+                            print('Prefix {pref} is not in IPAM.\nCreating prefix'.format(pref=str(ip_intf.network)))
+                            if nb_vrf is None:
+                                nb.ipam.prefixes.create(prefix=str(ip_intf.network))
+                            else:
+                                print('VRF = {vrf}'.format(vrf=nb_vrf))
+                                nb.ipam.prefixes.create(prefix=str(ip_intf.network), vrf_id=nb_vrf.id)
+                        else:
+                            vrf_pref = [pref.vrf for pref in nb.ipam.prefixes.filter(q=ip_addr)]
+                            if nb_vrf in vrf_pref:
+                                pass
+                            else:
+                                print('Prefix {pref} in VRF {vrf} is not in IPAM .\nCreating prefix'
+                                      .format(pref=str(ip_intf.network), vrf=nb_vrf))
+                                if nb_vrf is None:
+                                    nb.ipam.prefixes.create(prefix=str(ip_intf.network))
+                                else:
+                                    print('VRF = {vrf}'.format(vrf=nb_vrf))
+                                    nb.ipam.prefixes.create(prefix=str(ip_intf.network), vrf_id=nb_vrf.id)
 
 
 if __name__ == "__main__":
