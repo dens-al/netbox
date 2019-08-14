@@ -309,7 +309,7 @@ def main():
                                 nb.ipam.prefixes.create(prefix=str(ip_intf.network))
                             else:
                                 print('VRF = {vrf}'.format(vrf=nb_vrf))
-                                nb.ipam.prefixes.create(prefix=str(ip_intf.network), vrf_id=nb_vrf.id)
+                                nb.ipam.prefixes.create(prefix=str(ip_intf.network), vrf=nb_vrf.id)
                         else:
                             vrf_pref = [pref.vrf for pref in nb.ipam.prefixes.filter(q=ip_addr)]
                             if nb_vrf in vrf_pref:
@@ -321,7 +321,7 @@ def main():
                                     nb.ipam.prefixes.create(prefix=str(ip_intf.network))
                                 else:
                                     print('VRF = {vrf}'.format(vrf=nb_vrf))
-                                    nb.ipam.prefixes.create(prefix=str(ip_intf.network), vrf_id=nb_vrf.id)
+                                    nb.ipam.prefixes.create(prefix=str(ip_intf.network), vrf=nb_vrf.id)
 
 
 if __name__ == "__main__":
