@@ -311,8 +311,8 @@ def main():
                                 print('VRF = {vrf}'.format(vrf=nb_vrf))
                                 nb.ipam.prefixes.create(prefix=str(ip_intf.network), vrf=nb_vrf.id)
                         else:
-                            vrf_pref = [pref.vrf for pref in nb.ipam.prefixes.filter(q=ip_addr)]
-                            if nb_vrf in vrf_pref:
+                            vrf_pref = [str(pref.vrf) for pref in nb.ipam.prefixes.filter(q=ip_addr)]
+                            if str(nb_vrf) in vrf_pref:
                                 pass
                             else:
                                 print('Prefix {pref} in VRF {vrf} is not in IPAM .\nCreating prefix'
