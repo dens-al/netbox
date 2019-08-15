@@ -142,7 +142,7 @@ def create_ip_address(address, device_id, interface_id, vrf_id=None):
         print(e.error)
 
 
-def delete_ip_address(address, device_id, interface_id, vrf_id=None):
+def delete_ip_address(address, device_id, interface_id):
     """
     deleting IP address for interface, VRF is optional
     """
@@ -151,7 +151,6 @@ def delete_ip_address(address, device_id, interface_id, vrf_id=None):
             address=address,
             device_id=device_id,
             interface_id=interface_id,
-            vrf_id=vrf_id
         )
         result.delete()
         print('IP address {ipaddr} is deleted'.format(ipaddr=address))
@@ -286,7 +285,6 @@ def main():
                     delete_ip_address(ip_addr, nb_device.id, nb_interface.id)
 
                 # create IP address from device if in ipam it doesn't exist
-
                 for ip_addr in set(ip_list).difference(nb_ip_list):
                     print('creating IP address {ipaddr} on {intf} of {dev}'.format(ipaddr=ip_addr, intf=nb_interface,
                                                                                    dev=nb_device))

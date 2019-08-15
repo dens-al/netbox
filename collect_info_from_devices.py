@@ -36,7 +36,7 @@ def send_commands(device, commands):
             values_out = fsm.ParseText(command_result)
         command_result = [dict(zip(headers_out, outs)) for outs in values_out]
         results.append(command_result)
-        print(tabulate(command_result, headers='keys') + "\n")  # For OUT print
+        # print(tabulate(command_result, headers='keys') + "\n")  # For OUT print
     return results
 
 

@@ -9,8 +9,8 @@ hosts:
   - ip: 10.10.1.6
   - ip: 10.10.1.16
   - ip: 10.10.1.26
-#  cisco_nxos1:
-#  - ip: 10.10.1.9
+  cisco_nxos:
+  - ip: 10.10.1.9
   cisco_asa:
   - ip: 10.10.1.7
     #  huawei:
